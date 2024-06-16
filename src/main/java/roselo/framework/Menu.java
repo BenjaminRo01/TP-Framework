@@ -21,7 +21,7 @@ public class Menu {
         Properties prop = new Properties();
         try (InputStream configFile = getClass().getResourceAsStream(path);) {
             prop.load(configFile);
-            String[] clases = prop.getProperty("clases").split(",");
+            String[] clases = prop.getProperty(CLASS_NAME_PROPERTY).split(",");
             for (String c : clases) {
                 Class clazz = Class.forName(c);
                 if (Accion.class.isAssignableFrom(clazz)) {
