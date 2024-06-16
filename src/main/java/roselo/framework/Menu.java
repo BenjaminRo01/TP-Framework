@@ -36,6 +36,7 @@ public class Menu {
     }
     private void mostrarMenu(){
         int num = 1;
+        System.out.println("----Menú de acciones----");
         for(Accion a : this.acciones){
             System.out.println(num + ". " + a.nombreItemMenu() + "(" + a.descripcionItemMenu() + ")");
             num++;
@@ -46,12 +47,22 @@ public class Menu {
     public void procesarSolicitud(){
         Scanner scanner = new Scanner(System.in);
         int opcion = 1;
-        boolean estaVacia = this.acciones.isEmpty();
-        while(opcion > 0 && !estaVacia){
+        int tamanioList = this.acciones.size();
+
+        this.mostrarMenu();
+        opcion = scanner.nextInt();
+        while(opcion != 0){
+            if((opcion > 0) && (opcion <= tamanioList)) {
+                this.acciones.get(opcion - 1).ejecutar();
+            }
+            else{
+                System.out.println("Error: selecciona una de las opciones mostradas!");
+            }
             this.mostrarMenu();
             opcion = scanner.nextInt();
-            this.acciones.get(opcion - 1).ejecutar();
         }
+
         //Ver como implementar la notificación de éxito o fracaso de la ejecución.
+        System.out.println("Fin de la ejecución.");
     }
 }
