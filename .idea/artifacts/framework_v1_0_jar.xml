@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="framework-v1.0:jar">
+    <output-path>$USER_HOME$/Desktop/UNRN/3er/OO 2</output-path>
+    <root id="archive" name="TP-Framework.jar">
+      <element id="module-output" name="TP-Framework" />
+    </root>
+  </artifact>
+</component>
