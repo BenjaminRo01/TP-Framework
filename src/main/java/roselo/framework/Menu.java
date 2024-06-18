@@ -22,12 +22,10 @@ public class Menu {
         try (InputStream configFile = getClass().getResourceAsStream(path);) {
             prop.load(configFile);
             String[] clases = prop.getProperty(CLASS_NAME_PROPERTY).split(",");
-            for (String c : clases) {
-                Class clazz = Class.forName(c);
-                if (Accion.class.isAssignableFrom(clazz)) {
-                    Accion accion = (Accion) clazz.getDeclaredConstructor().newInstance();
-                    this.acciones.add(accion);
-                }
+            for (var c : clases) {
+                var clazz = Class.forName(c);
+                Accion accion = (Accion) clazz.getDeclaredConstructor().newInstance();
+                this.acciones.add(accion);
             }
         } catch (Exception e) {
             throw new RuntimeException(
