@@ -4,8 +4,9 @@
     <root id="archive" name="TP-Framework.jar">
       <element id="module-output" name="TP-Framework" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/jline/jline/2.14.6/jline-2.14.6.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/de/codeshelf/consoleui/consoleui/0.0.13/consoleui-0.0.13.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/fusesource/jansi/jansi/1.11/jansi-1.11.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/de/codeshelf/consoleui/consoleui/0.0.13/consoleui-0.0.13.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/json/json/20240303/json-20240303.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>
