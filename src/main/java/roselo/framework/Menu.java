@@ -35,10 +35,8 @@ public class Menu {
             String[] clases = prop.getProperty(CLASS_NAME_PROPERTY).split(",");
             for (String c : clases) {
                 var clazz = Class.forName(c);
-                if (Accion.class.isAssignableFrom(clazz)) {
-                    Accion accion = (Accion) clazz.getDeclaredConstructor().newInstance();
-                    this.acciones.add(accion);
-                }
+                Accion accion = (Accion) clazz.getDeclaredConstructor().newInstance();
+                this.acciones.add(accion);
             }
         } catch (Exception e) {
             throw new RuntimeException(
