@@ -1,3 +1,4 @@
 {
-"acciones": ["roselo.utilizacion.AccionUno", "roselo.utilizacion.AccionDos"]
+"acciones": ["roselo.utilizacion.AccionUno", "roselo.utilizacion.AccionDos"],
+  "max-threads": 2
 }

@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.fusesource.jansi.Ansi.ansi;
 
@@ -21,9 +23,12 @@ public class Menu {
     private static final String CONFIG_PROPERTIES_DEFAULT = "/config.properties";
     private static final String CLASS_NAME_PROPERTY = "clases";
     private static final String CLASS_NAME_JSON = "acciones";
+    private static final String NAME_MAX_THREADS_JSON = "max_threads";
     private ListPromptBuilder listPromptBuilder;
     private ConsolePrompt prompt;
     private PromptBuilder promptBuilder;
+    private int maxThreads;
+    private int keyFinSeleccion;
 
     public Menu(){
         this(CONFIG_PROPERTIES_DEFAULT);
@@ -33,6 +38,7 @@ public class Menu {
     }
     public Menu (String path){
         this.acciones = new ArrayList<>(); //Por si llega a estar vacio
+        this.maxThreads = 1; //Por si no se llega a especificar
         if(path.endsWith(".properties")){
             this.cargarAccionesProperties(path);
         } else if (path.endsWith(".json")) {
@@ -66,6 +72,9 @@ public class Menu {
                 Accion accion = (Accion) clazz.getDeclaredConstructor().newInstance();
                 this.acciones.add(accion);
             }
+            if(jsonObject.has(NAME_MAX_THREADS_JSON)){
+                this.maxThreads = jsonObject.getInt(NAME_MAX_THREADS_JSON);
+            }
         } catch (Exception e) {
             throw new RuntimeException(
                     "No se puede crear las instancias de 'Accion' desde JSON. ", e);
@@ -78,34 +87,51 @@ public class Menu {
 
         System.out.println(ansi().eraseScreen().render("@|green ----Menu de acciones---- |@"));
         listPromptBuilder = promptBuilder.createListPrompt();
-        listPromptBuilder.name("opcion").message("Selecciona una opcion");
+        listPromptBuilder.name("opcion").message("Selecciona una o varias opciones");
 
-        int opcion = 0;
         int num = 1;
         for(Accion a : this.acciones){
             listPromptBuilder.newItem(String.valueOf(num))
                     .text(num + ". " + a.nombreItemMenu() + "(" + a.descripcionItemMenu() + ")").add();
             num++;
         }
-        listPromptBuilder.newItem("0").text("Salir").add();
+        this.keyFinSeleccion = num;
+        listPromptBuilder.newItem(String.valueOf(num)).text(num + ". Finalizar y ejecutar seleccion").add();
+        listPromptBuilder.newItem("0").text("0. Salir").add();
         listPromptBuilder.addPrompt();
     }
     public void procesarSolicitud(){
+        List<Accion> accionesSeleccionadas = new ArrayList<Accion>();
         this.mostrarMenu();
-        try {
-            HashMap<String, ? extends PromtResultItemIF> result = prompt.prompt(promptBuilder.build());
-            ListResult resultado = (ListResult) result.get("opcion");
-            int opcion = Integer.parseInt(resultado.getSelectedId());
-            while(opcion != 0){
-                this.acciones.get(opcion - 1).ejecutar();
-                result = prompt.prompt(promptBuilder.build());
-                resultado = (ListResult) result.get("opcion");
-                opcion = Integer.parseInt(resultado.getSelectedId());
+        while(true){
+            try {
+                HashMap<String, ? extends PromtResultItemIF> result = prompt.prompt(promptBuilder.build());
+                ListResult resultado = (ListResult) result.get("opcion");
+                int opcion = Integer.parseInt(resultado.getSelectedId());
+                if(opcion == 0){
+                    System.out.println("Finalizando ejecucion.");
+                    break;
+                }
+                if(opcion != this.keyFinSeleccion){
+                    accionesSeleccionadas.add(this.acciones.get(opcion - 1));
+                    System.out.println("Se agrego correctamente");
+                }
+                else{
+                    ExecutorService executor = Executors.newFixedThreadPool(maxThreads);
+                    for (Accion accion : accionesSeleccionadas) {
+                        executor.submit(accion::ejecutar);
+                    }
+                    executor.shutdown();
+                    while (!executor.isTerminated()) {
+                        // Espera a que todas las tareas terminen (PREGUNTAR)
+                    }
+                    System.out.println("Todas las acciones han finalizado.");
+                    accionesSeleccionadas.clear();
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-            System.out.println("Finalizando ejecucion.");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            //Ver como implementar la notificación de éxito o fracaso de la ejecución.
         }
-        //Ver como implementar la notificación de éxito o fracaso de la ejecución.
     }
 }
