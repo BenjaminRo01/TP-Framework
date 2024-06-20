@@ -14,7 +14,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -47,7 +50,7 @@ public class Menu {
     }
     public Menu (String path){
         Path pathBase = Paths.get(path);
-        if (Files.notExists(pathBase)){
+        if (Files.exists(pathBase)){
             throw new RuntimeException("No existe path: " + path);
         }
 
@@ -111,7 +114,7 @@ public class Menu {
             num++;
         }
         this.keyFinSeleccion = num;
-        listPromptBuilder.newItem(String.valueOf(num)).text(num + ". Finalizar y ejecutar seleccion").add();
+        listPromptBuilder.newItem(String.valueOf(num)).text(num + ". Ejecutar seleccion").add();
         listPromptBuilder.newItem("0").text("0. Salir").add();
         listPromptBuilder.addPrompt();
     }
