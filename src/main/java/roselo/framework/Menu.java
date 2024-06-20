@@ -11,6 +11,9 @@ import org.json.JSONObject;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,11 +21,18 @@ import java.util.concurrent.Executors;
 import static org.fusesource.jansi.Ansi.ansi;
 
 public class Menu {
-    private List<Accion> acciones;
+    private static final String MSJ_EXCEPCION_FORMATO_PROPERTIES = "No se puede crear las instancias de 'Accion' desde PROPERTIES. ";
+    private static final String MSJ_EXCEPCION_FORMATO_JSON = "No se puede crear las instancias de 'Accion' desde JSON. ";
+    private static final String KEY_OPCION = "opcion";
+    private static final String MSJ_FORMATO_DESCONOCIDO = "Formato desconocido.";
     private static final String CONFIG_PROPERTIES_DEFAULT = "/config.properties";
     private static final String CLASS_NAME_PROPERTY = "clases";
     private static final String CLASS_NAME_JSON = "acciones";
     private static final String NAME_MAX_THREADS_JSON = "max-threads";
+    private static final String TITULO_MENU = "@|green ----Menu de acciones---- |@";
+    private static final String MSJ_SELECCION = "Selecciona una o varias opciones";
+    public static final String REGEX_CLASES = ",";
+    private List<Accion> acciones;
     private ListPromptBuilder listPromptBuilder;
     private ConsolePrompt prompt;
     private PromptBuilder promptBuilder;
@@ -36,22 +46,28 @@ public class Menu {
         this.acciones = acciones;
     }
     public Menu (String path){
-        this.acciones = new ArrayList<>(); //Por si llega a estar vacio
-        this.maxThreads = 1; //Por si no se llega a especificar
+        Path pathBase = Paths.get(path);
+        if (Files.notExists(pathBase)){
+            throw new RuntimeException("No existe path: " + path);
+        }
+
+        this.acciones = new ArrayList<>();
+        this.maxThreads = 1;
+        
         if(path.endsWith(".properties")){
             this.cargarAccionesProperties(path);
         } else if (path.endsWith(".json")) {
             this.cargarAccionesJson(path);
         }
         else{
-            throw new RuntimeException("Formato desconocido.");
+            throw new RuntimeException(MSJ_FORMATO_DESCONOCIDO);
         }
     }
     private void cargarAccionesProperties(String path) {
         Properties prop = new Properties();
         try (InputStream configFile = getClass().getResourceAsStream(path);) {
             prop.load(configFile);
-            String[] clases = prop.getProperty(CLASS_NAME_PROPERTY).split(",");
+            String[] clases = prop.getProperty(CLASS_NAME_PROPERTY).split(REGEX_CLASES);
             for (String c : clases) {
                 var clazz = Class.forName(c);
                 Accion accion = (Accion) clazz.getDeclaredConstructor().newInstance();
@@ -59,7 +75,7 @@ public class Menu {
             }
         } catch (Exception e) {
             throw new RuntimeException(
-                    "No se puede crear las instancias de 'Accion'. ", e);
+                    MSJ_EXCEPCION_FORMATO_PROPERTIES, e);
         }
     }
     private void cargarAccionesJson(String path) {
@@ -76,7 +92,7 @@ public class Menu {
             }
         } catch (Exception e) {
             throw new RuntimeException(
-                    "No se puede crear las instancias de 'Accion' desde JSON. ", e);
+                    MSJ_EXCEPCION_FORMATO_JSON, e);
         }
     }
     private void crearPromptMenu(){
@@ -84,9 +100,9 @@ public class Menu {
         prompt = new ConsolePrompt();
         promptBuilder = prompt.getPromptBuilder();
 
-        System.out.println(ansi().eraseScreen().render("@|green ----Menu de acciones---- |@"));
+        System.out.println(ansi().eraseScreen().render(TITULO_MENU));
         listPromptBuilder = promptBuilder.createListPrompt();
-        listPromptBuilder.name("opcion").message("Selecciona una o varias opciones");
+        listPromptBuilder.name(KEY_OPCION).message(MSJ_SELECCION);
 
         int num = 1;
         for(Accion a : this.acciones){
@@ -105,10 +121,10 @@ public class Menu {
         while(true){
             try {
                 HashMap<String, ? extends PromtResultItemIF> result = prompt.prompt(promptBuilder.build());
-                ListResult resultado = (ListResult) result.get("opcion");
+                ListResult resultado = (ListResult) result.get(KEY_OPCION);
                 int opcion = Integer.parseInt(resultado.getSelectedId());
                 if(opcion == 0){
-                    System.out.println("Finalizando ejecucion.");
+                    System.out.println("Fin de la ejecucion.");
                     break;
                 }
                 if(opcion != this.keyFinSeleccion){
