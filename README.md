@@ -55,3 +55,5 @@ Formato del archivo json especificando maximo de threads:
       "max-threads": 3
     }
 ```
+
+![Diagrama UML Framework](/src/main/resources/DigramaUMLFramework.png)
